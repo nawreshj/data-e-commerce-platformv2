@@ -56,12 +56,6 @@ application-local.properties
 **/grafana-data/
 
 ####################################
-# JWT / Security
-####################################
-private_key.pem
-public_key.pem
-
-####################################
 # Node / Frontend (si présent)
 ####################################
 node_modules/
