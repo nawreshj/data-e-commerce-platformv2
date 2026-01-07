@@ -1,0 +1,81 @@
+####################################
+# Java / Maven / Spring Boot
+####################################
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+####################################
+# IDEs
+####################################
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+####################################
+# OS files
+####################################
+.DS_Store
+Thumbs.db
+
+####################################
+# Spring Boot
+####################################
+application-local.yml
+application-local.properties
+
+####################################
+# H2 / Databases
+####################################
+*.mv.db
+*.trace.db
+*.db
+
+####################################
+# Docker
+####################################
+**/docker-data/
+**/prometheus-data/
+**/grafana-data/
+
+####################################
+# JWT / Security
+####################################
+private_key.pem
+public_key.pem
+
+####################################
+# Node / Frontend (si présent)
+####################################
+node_modules/
+dist/
+build/
+
+####################################
+# Logs
+####################################
+logs/
+*.log
+
+####################################
+# Temporary files
+####################################
+tmp/
+temp/
