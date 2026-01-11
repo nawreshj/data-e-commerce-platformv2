@@ -38,8 +38,8 @@ public class AuthController {
         // roles minimal (si tu n'as pas de champ roles en DB, mets juste USER)
         List<String> roles = List.of("USER");
 
-        //long expiresIn = 3600;
-        long expiresIn = 60;
+        
+        long expiresIn = 3600;
         String token = jwtIssuerService.generateToken(user.getId(), user.getEmail(), roles, expiresIn);
 
         return ResponseEntity.ok(new LoginResponseDto(token, expiresIn));
