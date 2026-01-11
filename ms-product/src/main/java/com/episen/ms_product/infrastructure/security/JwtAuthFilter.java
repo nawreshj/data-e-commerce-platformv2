@@ -20,11 +20,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         String path = request.getRequestURI();
         if (path.startsWith("/actuator")) {
@@ -33,22 +30,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String auth = request.getHeader("Authorization");
+
         if (auth == null || !auth.startsWith("Bearer ")) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
-            return;
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Missing or invalid Authorization header");
+            return; // On arrête tout
         }
 
         String token = auth.substring(7);
 
         try {
-            jwtTokenService.validate(token); // signature + exp
-            // (optionnel) ici tu peux mettre Authentication dans le context si tu veux
+            jwtTokenService.validate(token);
             filterChain.doFilter(request, response);
 
         } catch (JwtTokenService.TokenExpiredException ex) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token expired"); // demandé par le prof
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Token expired");
+
         } catch (JwtTokenService.TokenInvalidException ex) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
         }
     }
 }
