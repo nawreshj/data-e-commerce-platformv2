@@ -1,0 +1,65 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../e-commerce-monitoring/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ecommerce-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - ecommerce-net
+
+  ms-membership:
+    build:
+      context: ../ms-membership
+    container_name: ms-membership
+    ports:
+      - "8081:8081"
+    networks:
+      - ecommerce-net
+
+  ms-product:
+    build:
+      context: ../ms-product
+    container_name: ms-product
+    ports:
+      - "8082:8082"
+    networks:
+      - ecommerce-net
+    depends_on:
+      - ms-membership
+
+  ms-order:
+    build:
+      context: ../ms-order
+    container_name: ms-order
+    ports:
+      - "8083:8083"
+    networks:
+      - ecommerce-net
+    depends_on:
+      - ms-membership
+      - ms-product
+
+volumes:
+  grafana-data:
+    external: true
+    name: e-commerce-monitoring_grafana-data
+
+networks:
+  ecommerce-net:
+    driver: bridge
