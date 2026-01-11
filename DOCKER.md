@@ -4,6 +4,12 @@
 
 Les trois microservices de la plateforme e-commerce ont été containerisés et publiés sur Docker Hub :
 username de dockerhub : newsagesse
+
+https://hub.docker.com/repository/docker/newsagesse/ecommerce-membership/general
+https://hub.docker.com/repository/docker/newsagesse/ecommerce-product/general
+https://hub.docker.com/repository/docker/newsagesse/ecommerce-order/general
+
+
 - `newsagesse/ecommerce-membership:1.0`
 - `newsagesse/ecommerce-product:1.0`
 - `newsagesse/ecommerce-order:1.0`
@@ -19,7 +25,7 @@ Les images Docker ont donc été publiées en public, uniquement à des fins pé
 
 ## 2. Dockerfiles
 
-Chaque microservice dispose de son propre `Dockerfile` basé sur une image OpenJDK 
+Chaque microservice dispose de son propre `Dockerfile` basé sur une image eclipse-temurin:21-jdk
 
 ---
 
@@ -42,7 +48,7 @@ Ce script :
 1. Tag les images Docker locales
 2. Publie les images sur Docker Hub
 
-./publish-all.sh newsagesse(username)
+./publish-all.sh newsagesse(username dockerhub)
 
 
 ### 3.3 deploy.sh
