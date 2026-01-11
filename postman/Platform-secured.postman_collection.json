@@ -1,0 +1,146 @@
+{
+	"info": {
+		"_postman_id": "0c21dd17-17be-43eb-b8bd-156c52c63557",
+		"name": "Platform-secured",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34979795",
+		"_collection_link": "https://epigreen.postman.co/workspace/Personal-Workspace~cc050dac-ba4b-48dc-92b2-b967821ef0bb/collection/34979854-0c21dd17-17be-43eb-b8bd-156c52c63557?action=share&source=collection_link&creator=34979795"
+	},
+	"item": [
+		{
+			"name": "Generation du Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Application",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"alice.dupont@example.com\",\n  \"password\": \"password123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/v1/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Products OK",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Product Sans Token (401)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8083/api/v1/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Order Token Expired (403) Copy",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWxpY2UuZHVwb250QGV4YW1wbGUuY29tIiwicm9sZXMiOlsiVVNFUiJdLCJpYXQiOjE3NjgxMjc0MDQsImV4cCI6MTc2ODEyNzQ2NH0.Hk8_szlf60tsCxI-iT4cet2n59laV3qbCE2l5-WVTTxhLnxFwR5EysjEO669xMdAwNGi_GErRCnsm0F21RDu_36ExL_6cvlpCrNLyCwxYKd4iggGQCOX7Q6IDWwNr7CL8hTJSrYi98A7X_CP0QAXgcnAtJ1KxkLDzQi3DthWcW6Ng_eDTLLqtjf4XsASG45gFN65VQ9iGHZIguKp41p2U2_Z0c7ILSQ-axdSIhX3ge9qpno1bZ8MRKQFwQKpPX5hf6J9leuBn_yQbGLIYIKMk_OSDwnrSQVMx5O_BX8NrujGeRPJY_AyLW654OPzm1LHGRWphkV6yFL0VRkWDCVhog",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8083/api/v1/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creation Order OK",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWxpY2UuZHVwb250QGV4YW1wbGUuY29tIiwicm9sZXMiOlsiVVNFUiJdLCJpYXQiOjE3NjgxNDE2NDIsImV4cCI6MTc2ODE0MTcwMn0.SsMKcu_NkggMuOob9OGnKnxAFCM3En8pLYBF-AhB2TNG2B15Jlxn031qOt4lcv5TH_muO8UwTEs2UsWHEUH4pb_izqSEQUwYrjvjU4IP48EwohUCmf_kwzPYhrzX4OeeYt72SsbPibc0O0RDCTfZnLd69ke-UTwRAuJCSN0HsocdF41bO_N92zFH4y1b7EwRH6BsUrgadgX9uLorDFdK7mvWZzQvnT9u1TgaAznHFdfkgnFPfM3owCwjPr2uC_S4mGoThsU_P1grS6iGafTYygb41_c3_qBHaE8RpyQ4Fgd0ynXYms3HcrwsjOSJTTqbU1Z6wPqlif12fRRJQAwL4w",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": 1,\n  \"shippingAddress\": \"24 rue des lilas, Paris\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 1 }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/api/v1/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
