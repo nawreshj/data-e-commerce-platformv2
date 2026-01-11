@@ -66,4 +66,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("UNAUTHORIZED : Token rejeté par " + ex.getMessage());
     }
+
+   
+    @ExceptionHandler(ServiceForbiddenException.class)
+    public ResponseEntity<String> handleForbidden(ServiceForbiddenException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body("FORBIDDEN : " + ex.getMessage());
+    }
 }

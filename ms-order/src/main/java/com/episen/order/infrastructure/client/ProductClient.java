@@ -2,7 +2,9 @@ package com.episen.order.infrastructure.client;
 
 import com.episen.order.application.dto.ProductDto;
 import com.episen.order.application.dto.StockUpdateRequestDto;
+import com.episen.order.infrastructure.exception.ServiceForbiddenException;
 import com.episen.order.infrastructure.exception.ServiceUnauthorizedException;
+import com.episen.order.infrastructure.exception.ServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -24,17 +26,15 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * Sécurisation (TP2 - JWT) :
  *  - propage le JWT reçu par ms-order vers ms-product via le header :
  *      Authorization: Bearer <token>
- *  - si ms-product refuse le token (401 Unauthorized), on remonte une exception dédiée
- *    pour pouvoir renvoyer une réponse cohérente côté ms-order.
+ *  - gère explicitement les erreurs d’authentification inter-services :
+ *      * 401 Unauthorized  → token invalide
+ *      * 403 Forbidden     → token expiré
+ *      * autres erreurs    → service indisponible
  *
  * Particularités :
- *  - n’expose aucune logique métier : simple façade réseau ;
- *  - l’URL de base est injectée via application.yml (bonne pratique) ;
- *  - gère proprement les erreurs réseau et les cas d’authentification refusée.
- *
- * Objectif :
- *  isoler toutes les interactions HTTP ici, afin de garder OrderService propre
- *  et indépendant de la couche transport/sécurité inter-services.
+ *  - aucune logique métier : simple façade réseau ;
+ *  - URL de base injectée via application.yml (bonne pratique) ;
+ *  - permet à OrderService de rester indépendant du transport et de la sécurité.
  */
 @Slf4j
 @Component
@@ -52,20 +52,23 @@ public class ProductClient {
     /**
      * Récupère un produit depuis ms-product.
      *
-     * Endpoint cible : GET /api/v1/products/{id}
+     * Endpoint cible :
+     *  GET /api/v1/products/{id}
      *
      * JWT :
-     *  - récupère le header Authorization de la requête entrante (client -> ms-order)
-     *  - le propage vers ms-product (order -> product)
+     *  - récupère le header Authorization de la requête entrante (client → ms-order)
+     *  - le propage vers ms-product (order → product)
      *
-     * Erreurs :
-     *  - 401 renvoyé par ms-product => ServiceUnauthorizedException (token rejeté)
+     * Gestion des erreurs :
+     *  - 401 → token invalide → ServiceUnauthorizedException
+     *  - 403 → token expiré → ServiceForbiddenException
+     *  - autres erreurs → ServiceUnavailableException
      */
     public ProductDto getProductById(Long productId) {
         String url = productBaseUrl + "/api/v1/products/" + productId;
 
-        // Propage Authorization si présent dans la requête entrante
-        HttpEntity<Void> entity = new HttpEntity<>(buildAuthHeadersFromIncomingRequest());
+        HttpEntity<Void> entity =
+                new HttpEntity<>(buildAuthHeadersFromIncomingRequest());
 
         try {
             ResponseEntity<ProductDto> res =
@@ -73,22 +76,32 @@ public class ProductClient {
             return res.getBody();
 
         } catch (HttpClientErrorException.Unauthorized ex) {
-            // ms-product a rejeté le token
+            log.warn("PRODUCT_SERVICE rejected token (401) productId={}", productId);
             throw new ServiceUnauthorizedException("PRODUCT_SERVICE");
+
+        } catch (HttpClientErrorException.Forbidden ex) {
+            log.warn("PRODUCT_SERVICE rejected token (403) productId={}", productId);
+            throw new ServiceForbiddenException("PRODUCT_SERVICE");
+
+        } catch (RestClientException ex) {
+            log.error("PRODUCT_SERVICE unavailable productId={}", productId, ex);
+            throw new ServiceUnavailableException("PRODUCT_SERVICE");
         }
     }
 
     /**
      * Met à jour le stock d’un produit sur ms-product.
      *
-     * Endpoint cible : PATCH /api/v1/products/{id}/stock
+     * Endpoint cible :
+     *  PATCH /api/v1/products/{id}/stock
      *
      * JWT :
      *  - propage le header Authorization comme pour getProductById().
      *
-     * Erreurs :
-     *  - 401 renvoyé par ms-product => ServiceUnauthorizedException
-     *  - erreurs réseau/timeout/5xx => IllegalStateException (service indisponible)
+     * Gestion des erreurs :
+     *  - 401 → token invalide → ServiceUnauthorizedException
+     *  - 403 → token expiré → ServiceForbiddenException
+     *  - autres erreurs → ServiceUnavailableException
      */
     public void updateProductStock(Long productId, int newStock) {
         String url = productBaseUrl + "/api/v1/products/" + productId + "/stock";
@@ -104,26 +117,29 @@ public class ProductClient {
             restTemplate.exchange(url, HttpMethod.PATCH, entity, Void.class);
 
         } catch (HttpClientErrorException.Unauthorized ex) {
-            // ms-product a rejeté le token
+            log.warn("PRODUCT_SERVICE rejected token (401) stock update productId={}", productId);
             throw new ServiceUnauthorizedException("PRODUCT_SERVICE");
 
+        } catch (HttpClientErrorException.Forbidden ex) {
+            log.warn("PRODUCT_SERVICE rejected token (403) stock update productId={}", productId);
+            throw new ServiceForbiddenException("PRODUCT_SERVICE");
+
         } catch (RestClientException ex) {
-            // timeout, DNS, 5xx, etc.
-            log.error("Erreur Product service (stock update) productId={}", productId, ex);
-            throw new IllegalStateException("Service Product indisponible.", ex);
+            log.error("PRODUCT_SERVICE unavailable (stock update) productId={}", productId, ex);
+            throw new ServiceUnavailableException("PRODUCT_SERVICE");
         }
     }
 
     /**
      * Construit les headers HTTP à envoyer vers ms-product.
      *
-     * Objectif principal :
-     *  - récupérer le header "Authorization" de la requête entrante (si présent)
-     *  - le recopier tel quel dans la requête sortante
+     * Objectif :
+     *  - récupérer le header "Authorization" de la requête entrante
+     *  - le recopier tel quel (Bearer <token>) dans la requête sortante
      *
      * Remarque :
-     *  - RequestContextHolder fonctionne car l'appel se fait dans le thread de la requête HTTP.
-     *  - si attrs == null, on n'ajoute pas Authorization (cas rare : exécution hors contexte web).
+     *  - RequestContextHolder fonctionne car l’appel se fait
+     *    dans le thread de la requête HTTP.
      */
     private HttpHeaders buildAuthHeadersFromIncomingRequest() {
         HttpHeaders headers = new HttpHeaders();
@@ -135,7 +151,6 @@ public class ProductClient {
         if (attrs != null) {
             String auth = attrs.getRequest().getHeader("Authorization");
             if (auth != null && !auth.isBlank()) {
-                // On propage exactement ce que le client a envoyé (Bearer <token>)
                 headers.set("Authorization", auth);
             }
         }
