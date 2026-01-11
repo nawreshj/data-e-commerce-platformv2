@@ -5,8 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.lang.Collections;
 
 import java.io.IOException;
 
@@ -20,11 +25,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         String path = request.getRequestURI();
         if (path.startsWith("/actuator")) {
@@ -33,22 +35,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String auth = request.getHeader("Authorization");
+
         if (auth == null || !auth.startsWith("Bearer ")) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Missing or invalid Authorization header");
             return;
         }
 
         String token = auth.substring(7);
 
         try {
-            jwtTokenService.validate(token); // signature + exp
-            // (optionnel) ici tu peux mettre Authentication dans le context si tu veux
+            Claims claims = jwtTokenService.validate(token);
+            String username = claims.getSubject();
+
+            UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             filterChain.doFilter(request, response);
 
         } catch (JwtTokenService.TokenExpiredException ex) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token expired"); // demandé par le prof
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Token expired");
+
         } catch (JwtTokenService.TokenInvalidException ex) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
         }
     }
 }
