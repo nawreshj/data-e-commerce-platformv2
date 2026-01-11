@@ -59,4 +59,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body("BAD_REQUEST : " + ex.getMessage());
     }
+
+    @ExceptionHandler(ServiceUnauthorizedException.class)
+    public ResponseEntity<String> handleUnauthorized(ServiceUnauthorizedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("UNAUTHORIZED : Token rejeté par " + ex.getMessage());
+    }
 }

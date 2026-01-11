@@ -55,6 +55,8 @@ application-local.properties
 **/prometheus-data/
 **/grafana-data/
 
+
+
 ####################################
 # Node / Frontend (si présent)
 ####################################
