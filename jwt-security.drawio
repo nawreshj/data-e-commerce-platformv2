@@ -1,0 +1,51 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="JWT Security Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="client" value="Client&#10;(Postman / Frontend)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="membership" value="ms-membership&#10;POST /api/v1/auth/login&#10;• RSA private key&#10;• JWT RS256 (1h)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="90" width="280" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="order" value="ms-order&#10;JWT Validation&#10;(public_key.pem)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="260" width="280" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="user" value="ms-user&#10;JWT Validation&#10;(public_key.pem)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="700" y="210" width="260" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="product" value="ms-product&#10;JWT Validation&#10;(public_key.pem)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="700" y="360" width="260" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a1" value="POST /auth/login&#10;email + password" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="client" target="membership">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a2" value="JWT signé RS256" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="membership" target="client">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a3" value="POST /orders&#10;Authorization: Bearer JWT" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="client" target="order">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a4" value="GET /users/{id}&#10;JWT propagé" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="order" target="user">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a5" value="GET /products/{id}&#10;JWT propagé" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="order" target="product">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

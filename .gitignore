@@ -55,11 +55,6 @@ application-local.properties
 **/prometheus-data/
 **/grafana-data/
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> ms-product-nawel
 ####################################
 # Node / Frontend (si présent)
 ####################################
