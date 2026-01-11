@@ -5,8 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.lang.Collections;
 
 import java.io.IOException;
 
@@ -34,13 +39,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (auth == null || !auth.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Missing or invalid Authorization header");
-            return; // On arrête tout
+            return;
         }
 
         String token = auth.substring(7);
 
         try {
-            jwtTokenService.validate(token);
+            Claims claims = jwtTokenService.validate(token);
+            String username = claims.getSubject();
+
+            UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             filterChain.doFilter(request, response);
 
         } catch (JwtTokenService.TokenExpiredException ex) {
