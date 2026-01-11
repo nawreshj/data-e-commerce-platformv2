@@ -30,6 +30,8 @@ services:
       - "8081:8081"
     networks:
       - ecommerce-net
+    environment:
+      MEMBERSHIP_SERVICE_URL: http://ms-membership:8081
 
   ms-product:
     image: newsagesse/ecommerce-product:1.0
@@ -51,6 +53,9 @@ services:
     depends_on:
       - ms-membership
       - ms-product
+    environment:
+      PRODUCT_SERVICE_URL: http://ms-product:8082
+      MEMBERSHIP_SERVICE_URL: http://ms-membership:8081
 
 volumes:
   grafana-data:
