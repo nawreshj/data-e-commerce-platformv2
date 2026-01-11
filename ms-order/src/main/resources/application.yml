@@ -125,8 +125,8 @@ logging:
 app:
   clients:
     user:
-      base-url: http://localhost:8081
-      actuator-url: http://localhost:8081/actuator/health
+      base-url: ${MEMBERSHIP_SERVICE_URL:http://localhost:8081}
+      actuator-url: ${MEMBERSHIP_SERVICE_URL:http://localhost:8081}/actuator/health
     product:
-      base-url: http://localhost:8082
-      actuator-url: http://localhost:8082/actuator/health
+      base-url: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+      actuator-url: ${PRODUCT_SERVICE_URL:http://localhost:8082}/actuator/health

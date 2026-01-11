@@ -24,17 +24,17 @@ services:
       - ecommerce-net
 
   ms-membership:
-    build:
-      context: ../ms-membership
+    image: newsagesse/ecommerce-membership:1.0
     container_name: ms-membership
     ports:
       - "8081:8081"
     networks:
       - ecommerce-net
+    environment:
+      MEMBERSHIP_SERVICE_URL: http://ms-membership:8081
 
   ms-product:
-    build:
-      context: ../ms-product
+    image: newsagesse/ecommerce-product:1.0
     container_name: ms-product
     ports:
       - "8082:8082"
@@ -44,8 +44,7 @@ services:
       - ms-membership
 
   ms-order:
-    build:
-      context: ../ms-order
+    image: newsagesse/ecommerce-order:1.0
     container_name: ms-order
     ports:
       - "8083:8083"
@@ -54,11 +53,13 @@ services:
     depends_on:
       - ms-membership
       - ms-product
+    environment:
+      PRODUCT_SERVICE_URL: http://ms-product:8082
+      MEMBERSHIP_SERVICE_URL: http://ms-membership:8081
 
 volumes:
   grafana-data:
-    external: true
-    name: e-commerce-monitoring_grafana-data
+  prometheus-data:
 
 networks:
   ecommerce-net:
